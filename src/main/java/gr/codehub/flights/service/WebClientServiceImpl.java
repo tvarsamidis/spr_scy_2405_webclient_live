@@ -1,6 +1,7 @@
-package flights.service;
+package gr.codehub.flights.service;
 
-import flights.domain.Flight;
+import gr.codehub.flights.domain.Flight;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,14 @@ public class WebClientServiceImpl implements WebClientService {
 
     private final WebClient webClient;
 
+    @Autowired
     public WebClientServiceImpl(WebClient webClient) {
         this.webClient = webClient;
     }
 
     @Override
     public String ping() {
-        return  webClient.get()
+        return webClient.get()
                 .uri("/flight/ping")
                 .retrieve()
                 .bodyToMono(String.class)
@@ -28,33 +30,32 @@ public class WebClientServiceImpl implements WebClientService {
     }
 
     @Override
-    public String readStringByNameFromServer(String flightName) {
+    public String readStringByNameFromServer(String name) {
         Mono<String> flightMono = webClient.get()
-                .uri("/flight/" + flightName)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE)
+                .uri("/flight/" + name)
+                // header is the same as the default, so it is not really needed
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve()
                 .bodyToMono(String.class);
-        String result = flightMono.block();
-        return result;
+        return flightMono.block();
     }
 
     @Override
-    public Flight readFlightByNameFromServer(String flightName) {
+    public Flight readFlightByNameFromServer(String name) {
         Mono<Flight> flightMono = webClient.get()
-                .uri("/flight/" + flightName)
+                .uri("/flight/" + name)
                 .retrieve()
                 .bodyToMono(Flight.class);
-        Flight flight = flightMono.block();
-        return flight;
+        return flightMono.block();
     }
 
     @Override
-    public Flight deleteByNameFromServer(String flightName) {
-        return webClient.delete()
-                .uri("/flight/" + flightName)
+    public Flight deleteByNameFromServer(String name) {
+        Mono<Flight> flightMono = webClient.delete()
+                .uri("/flight/" + name)
                 .retrieve()
-                .bodyToMono(Flight.class)
-                .block();
+                .bodyToMono(Flight.class);
+        return flightMono.block();
     }
 
     @Override
@@ -64,12 +65,17 @@ public class WebClientServiceImpl implements WebClientService {
                 .bodyValue(flight)
                 .retrieve()
                 .bodyToMono(Flight.class);
-        Flight savedFlight = flightMono.block();
-        return savedFlight;
+        return flightMono.block();
     }
 
     @Override
     public List<Flight> read() {
-        throw new RuntimeException("read() is not ready yet");
+        Mono<List<Flight>> flightMono = webClient.get()
+                .uri("/flight")
+                .retrieve()
+                .bodyToFlux(Flight.class)
+                .collectList();
+        List<Flight> flightList = flightMono.block();
+        return flightList;
     }
 }

@@ -1,4 +1,4 @@
-package flights.domain;
+package gr.codehub.flights.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
