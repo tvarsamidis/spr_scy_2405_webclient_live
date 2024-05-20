@@ -1,20 +1,34 @@
 package flights.service;
 
 import flights.domain.Flight;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Service
 public class WebClientServiceImpl implements WebClientService {
 
+    private final WebClient webClient;
+
+    public WebClientServiceImpl(WebClient webClient) {
+        this.webClient = webClient;
+    }
 
     @Override
     public String ping() {
-        throw new RuntimeException("ping() is not ready yet");
+        return  webClient.get()
+                .uri("/flight/ping")
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
     }
 
     @Override
     public String readStringByNameFromServer(String name) {
-        throw new RuntimeException("ping() is not ready yet");
+        throw new RuntimeException("readStringByNameFromServer() is not ready yet");
     }
 
     @Override
